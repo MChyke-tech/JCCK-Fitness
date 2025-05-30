@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JCCK-Fitness Shop</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        /* Custom scrollbar for better aesthetics */
+        ::-webkit-scrollbar {
+            width: 10px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        // Hauptkomponente der Anwendung
+        function App() {
+            // Zustände für die Navigation und den Warenkorb
+            const [currentPage, setCurrentPage] = React.useState('home');
+            const [cartItems, setCartItems] = React.useState([]);
+            const [isCartOpen, setIsCartOpen] = React.useState(false);
+
+            // Beispiel-Produktdaten
+            const products = [
+                {
+                    id: 1,
+                    name: 'Fitness-Handschuhe Pro',
+                    description: 'Hochwertige Handschuhe für optimalen Halt und Schutz beim Training. Diese Handschuhe sind extrem langlebig und bieten eine hervorragende Belüftung, um Schwitzen zu reduzieren und den Komfort zu maximieren, selbst bei langen und intensiven Trainingseinheiten. Sie sind ideal für Gewichtheben, Crossfit und allgemeines Fitnesstraining.',
+                    price: 29.99,
+                    imageUrl: 'https://placehold.co/400x300/F0F0F0/333333?text=Handschuhe', // Placeholder Bild
+                },
+                {
+                    id: 2,
+                    name: 'Widerstandsband-Set',
+                    description: 'Vielseitiges Set mit Bändern unterschiedlicher Stärken für jedes Workout. Perfekt für Krafttraining, Yoga, Pilates und Physiotherapie. Die Bänder sind aus hochwertigem Latex gefertigt und bieten eine gleichmäßige Widerstandskraft über die gesamte Bewegung. Ein Must-have für das Home-Gym oder unterwegs.',
+                    price: 39.99,
+                    imageUrl: 'https://placehold.co/400x300/F0F0F0/333333?text=Widerstandsband', // Placeholder Bild
+                },
+                {
+                    id: 3,
+                    name: 'Trinkflasche Isoliert',
+                    description: 'Hält Getränke stundenlang kalt oder warm. Perfekt für das Training. Diese Flasche ist aus doppelwandigem Edelstahl gefertigt und verfügt über eine vakuumisolierte Konstruktion, die Temperaturschwankungen minimiert. Sie ist auslaufsicher und BPA-frei, ideal für Wasser, Sportgetränke oder Smoothies.',
+                    price: 19.99,
+                    imageUrl: 'https://placehold.co/400x300/F0F0F0/333333?text=Trinkflasche', // Placeholder Bild
+                },
+                {
+                    id: 4,
+                    name: 'Springseil High-Speed',
+                    description: 'Leichtes und schnelles Springseil für effektives Cardio-Training. Mit verstellbarer Länge und ergonomischen Griffen für maximalen Komfort und Kontrolle. Ideal für Anfänger und Fortgeschrittene, die ihre Ausdauer und Koordination verbessern möchten. Kompakt und leicht zu transportieren.',
+                    price: 14.99,
+                    imageUrl: 'https://placehold.co/400x300/F0F0F0/333333?text=Springseil', // Placeholder Bild
+                },
+                {
+                    id: 5,
+                    name: 'Yogamatte Premium',
+                    description: 'Extra dicke und rutschfeste Matte für Yoga und Pilates. Bietet hervorragende Dämpfung und Stabilität für alle Übungen. Hergestellt aus umweltfreundlichen Materialien, ist sie leicht zu reinigen und zu transportieren. Ideal für den Einsatz zu Hause, im Studio oder im Freien.',
+                    price: 49.99,
+                    imageUrl: 'https://placehold.co/400x300/F0F0F0/333333?text=Yogamatte', // Placeholder Bild
+                },
+                {
+                    id: 6,
+                    name: 'Gewichthebergürtel',
+                    description: 'Unterstützt den Rücken bei schweren Hebeübungen und hilft, die richtige Körperhaltung zu bewahren. Hergestellt aus strapazierfähigem Leder mit einer robusten Schnalle für sicheren Halt. Unverzichtbar für Powerlifting, Bodybuilding und alle Arten von Krafttraining, die die Wirbelsäule belasten.',
+                    price: 59.99,
+                    imageUrl: 'https://placehold.co/400x300/F0F0F0/333333?text=Gewichtsgürtel', // Placeholder Bild
+                },
+            ];
+
+            // Funktion zum Hinzufügen eines Produkts zum Warenkorb
+            const addToCart = (product) => {
+                setCartItems((prevItems) => {
+                    const existingItem = prevItems.find((item) => item.id === product.id);
+                    if (existingItem) {
+                        return prevItems.map((item) =>
+                            item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item
+                        );
+                    } else {
+                        return [...prevItems, { ...product, quantity: 1 }];
+                    }
+                });
+                setIsCartOpen(true); // Warenkorb öffnen, wenn ein Artikel hinzugefügt wird
+            };
+
+            // Funktion zum Entfernen eines Produkts aus dem Warenkorb
+            const removeFromCart = (productId) => {
+                setCartItems((prevItems) => prevItems.filter((item) => item.id !== productId));
+            };
+
+            // Funktion zur Aktualisierung der Menge eines Artikels im Warenkorb
+            const updateQuantity = (productId, newQuantity) => {
+                setCartItems((prevItems) =>
+                    prevItems.map((item) =>
+                        item.id === productId ? { ...item, quantity: Math.max(1, newQuantity) } : item
+                    )
+                );
+            };
+
+            // Gesamtsumme des Warenkorbs berechnen
+            const cartTotal = cartItems.reduce((total, item) => total + item.price * item.quantity, 0);
+
+            // Komponente für das JCCK-Fitness Logo
+            const JCCKLogo = () => (
+                <div className="flex items-center">
+                    <span className="text-indigo-600 font-extrabold text-3xl sm:text-4xl">J</span>
+                    <span className="text-indigo-600 font-extrabold text-3xl sm:text-4xl">C</span>
+                    {/* Das zweite C spiegelverkehrt */}
+                    <span className="text-indigo-600 font-extrabold text-3xl sm:text-4xl inline-block transform scale-x-[-1]">C</span>
+                    <span className="text-indigo-600 font-extrabold text-3xl sm:text-4xl">K</span>
+                    <span className="text-gray-800 font-extrabold text-3xl sm:text-4xl">-Fitness</span>
+                </div>
+            );
+
+            // Komponente für den Header
+            const Header = () => (
+                <header className="bg-white shadow-md p-4 sticky top-0 z-50 rounded-b-lg">
+                    <div className="container mx-auto flex justify-between items-center flex-wrap">
+                        <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-800 tracking-tight">
+                            <a href="#" onClick={(e) => { e.preventDefault(); setCurrentPage('home'); }} className="hover:text-indigo-600 transition-colors duration-300">
+                                <JCCKLogo />
+                            </a>
+                        </h1>
+                        <nav className="flex items-center space-x-2 sm:space-x-4 mt-4 md:mt-0">
+                            <ul className="flex flex-wrap space-x-2 sm:space-x-4 md:space-x-6 text-sm sm:text-base">
+                                <li>
+                                    <a
+                                        href="#"
+                                        onClick={(e) => { e.preventDefault(); setCurrentPage('home'); }}
+                                        className="text-gray-600 hover:text-indigo-600 transition-colors duration-300 font-medium"
+                                    >
+                                        Startseite
+                                    </a>
+                                </li>
+                                <li>
+                                    <a
+                                        href="#"
+                                        onClick={(e) => { e.preventDefault(); setCurrentPage('products'); }}
+                                        className="text-gray-600 hover:text-indigo-600 transition-colors duration-300 font-medium"
+                                    >
+                                        Produkte
+                                    </a>
+                                </li>
+                                <li>
+                                    <a
+                                        href="#"
+                                        onClick={(e) => { e.preventDefault(); setCurrentPage('about'); }}
+                                        className="text-gray-600 hover:text-indigo-600 transition-colors duration-300 font-medium"
+                                    >
+                                        Über Uns
+                                    </a>
+                                </li>
+                                <li>
+                                    <a
+                                        href="#"
+                                        onClick={(e) => { e.preventDefault(); setCurrentPage('contact'); }}
+                                        className="text-gray-600 hover:text-indigo-600 transition-colors duration-300 font-medium"
+                                    >
+                                        Kontakt
+                                    </a>
+                                </li>
+                            </ul>
+                            <button
+                                onClick={() => setIsCartOpen(true)}
+                                className="relative bg-indigo-600 text-white p-2 sm:p-3 rounded-full hover:bg-indigo-700 transition-colors duration-300 shadow-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-50"
+                                aria-label="Warenkorb öffnen"
+                            >
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    className="h-5 w-5 sm:h-6 sm:w-6"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    stroke="currentColor"
+                                >
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth={2}
+                                        d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0-10a2 2 0 110 4 2 2 0 010-4z"
+                                    />
+                                </svg>
+                                {cartItems.length > 0 && (
+                                    <span className="absolute top-0 right-0 inline-flex items-center justify-center px-1.5 py-0.5 text-xs font-bold leading-none text-red-100 bg-red-600 rounded-full transform translate-x-1/2 -translate-y-1/2">
+                                        {cartItems.length}
+                                    </span>
+                                )}
+                            </button>
+                        </nav>
+                    </div>
+                </header>
+            );
+
+            // Komponente für den Hero-Bereich
+            const HeroSection = () => (
+                <section className="bg-gradient-to-r from-indigo-500 to-purple-600 text-white py-16 sm:py-20 px-4 rounded-lg shadow-xl m-4">
+                    <div className="container mx-auto text-center">
+                        <h2 className="text-3xl sm:text-5xl font-extrabold mb-4 sm:mb-6 leading-tight">
+                            Dein Partner für Fitness-Accessoires
+                        </h2>
+                        <p className="text-base sm:text-xl mb-6 sm:mb-8 opacity-90 max-w-2xl mx-auto">
+                            Entdecke hochwertige Ausrüstung, die dich bei jedem Training unterstützt.
+                        </p>
+                        <button
+                            onClick={() => setCurrentPage('products')}
+                            className="bg-white text-indigo-700 font-bold py-2 px-6 sm:py-3 sm:px-8 rounded-full text-base sm:text-lg shadow-lg hover:bg-gray-100 transform hover:scale-105 transition-all duration-300"
+                        >
+                            Jetzt shoppen
+                        </button>
+                    </div>
+                </section>
+            );
+
+            // Komponente für eine einzelne Produktkarte
+            const ProductCard = ({ product, onAddToCart }) => (
+                <div className="bg-white rounded-xl shadow-lg hover:shadow-2xl transition-shadow duration-300 overflow-hidden flex flex-col items-center p-4 sm:p-6 transform hover:-translate-y-2">
+                    <img
+                        src={product.imageUrl}
+                        alt={product.name}
+                        className="w-full h-40 sm:h-48 object-cover rounded-lg mb-4 shadow-md"
+                        onError={(e) => { e.target.onerror = null; e.target.src = `https://placehold.co/400x300/F0F0F0/333333?text=${product.name.replace(/\s/g, '+')}`; }}
+                    />
+                    <h3 className="text-xl sm:text-2xl font-semibold text-gray-800 mb-2 text-center">{product.name}</h3>
+                    <p className="text-gray-600 text-sm sm:text-base text-center mb-4 flex-grow break-words">{product.description}</p>
+                    <span className="text-indigo-700 font-bold text-lg sm:text-xl mb-4">€{product.price.toFixed(2)}</span>
+                    <button
+                        onClick={() => onAddToCart(product)}
+                        className="bg-indigo-600 text-white py-2 px-4 sm:px-5 rounded-full hover:bg-indigo-700 transition-colors duration-300 shadow-md transform hover:scale-105 text-sm sm:text-base"
+                    >
+                        In den Warenkorb
+                    </button>
+                </div>
+            );
+
+            // Komponente für die Produktliste
+            const ProductList = () => (
+                <section className="py-8 sm:py-12 px-4">
+                    <div className="container mx-auto">
+                        <h2 className="text-3xl sm:text-4xl font-bold text-gray-800 text-center mb-8 sm:mb-10">Unsere Produkte</h2>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+                            {products.map((product) => (
+                                <ProductCard key={product.id} product={product} onAddToCart={addToCart} />
+                            ))}
+                        </div>
+                    </div>
+                </section>
+            );
+
+            // Komponente für die "Über Uns"-Seite
+            const AboutPage = () => (
+                <section className="py-8 sm:py-12 px-4 bg-gray-50 rounded-lg shadow-lg m-4">
+                    <div className="container mx-auto text-center">
+                        <h2 className="text-3xl sm:text-4xl font-bold text-gray-800 mb-4 sm:mb-6">Über Uns</h2>
+                        <p className="text-base sm:text-lg text-gray-700 leading-relaxed max-w-3xl mx-auto break-words">
+                            Wir sind ein Team von Fitness-Enthusiasten, die es sich zur Aufgabe gemacht haben,
+                            hochwertige Accessoires und Zubehör für Sportler aller Leistungsstufen anzubieten.
+                            Unsere Produkte werden sorgfältig ausgewählt, um Leistung, Komfort und Langlebigkeit
+                            zu gewährleisten. Wir glauben, dass die richtige Ausrüstung den Unterschied machen kann,
+                            um deine Fitnessziele zu erreichen.
+                        </p>
+                        <p className="text-base sm:text-lg text-gray-700 leading-relaxed max-w-3xl mx-auto mt-4 break-words">
+                            Unsere Mission ist es, dich auf deiner Fitnessreise zu unterstützen und dir die besten
+                            Produkte zu bieten, damit du dein volles Potenzial entfalten kannst.
+                        </p>
+                    </div>
+                </section>
+            );
+
+            // Komponente für die Kontaktseite
+            const ContactPage = () => (
+                <section className="py-8 sm:py-12 px-4 bg-gray-50 rounded-lg shadow-lg m-4">
+                    <div className="container mx-auto text-center">
+                        <h2 className="text-3xl sm:text-4xl font-bold text-gray-800 mb-4 sm:mb-6">Kontaktiere Uns</h2>
+                        <p className="text-base sm:text-lg text-gray-700 leading-relaxed max-w-3xl mx-auto mb-6 sm:mb-8 break-words">
+                            Hast du Fragen, Anregungen oder benötigst du Hilfe? Zögere nicht, uns zu kontaktieren!
+                            Wir sind für dich da.
+                        </p>
+                        <div className="flex flex-col items-center space-y-3 sm:space-y-4">
+                            <p className="text-lg sm:text-xl text-indigo-700 font-semibold break-words">E-Mail: info@jcck-fitness.de</p>
+                            <p className="text-lg sm:text-xl text-indigo-700 font-semibold break-words">Telefon: +49 123 456789</p>
+                            <p className="text-base sm:text-lg text-gray-600 break-words">
+                                Unsere Geschäftszeiten: Mo-Fr, 9:00 - 17:00 Uhr
+                            </p>
+                        </div>
+                        <form className="mt-8 sm:mt-10 max-w-xl mx-auto bg-white p-6 sm:p-8 rounded-lg shadow-md">
+                            <div className="mb-4 sm:mb-6 text-left">
+                                <label htmlFor="name" className="block text-gray-700 text-sm font-bold mb-2">
+                                    Name
+                                </label>
+                                <input
+                                    type="text"
+                                    id="name"
+                                    className="shadow appearance-none border rounded-lg w-full py-2 px-3 sm:py-3 sm:px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                    placeholder="Dein Name"
+                                />
+                            </div>
+                            <div className="mb-4 sm:mb-6 text-left">
+                                <label htmlFor="email" className="block text-gray-700 text-sm font-bold mb-2">
+                                    E-Mail
+                                </label>
+                                <input
+                                    type="email"
+                                    id="email"
+                                    className="shadow appearance-none border rounded-lg w-full py-2 px-3 sm:py-3 sm:px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                    placeholder="Deine E-Mail-Adresse"
+                                />
+                            </div>
+                            <div className="mb-4 sm:mb-6 text-left">
+                                <label htmlFor="message" className="block text-gray-700 text-sm font-bold mb-2">
+                                    Nachricht
+                                </label>
+                                <textarea
+                                    id="message"
+                                    rows="4"
+                                    className="shadow appearance-none border rounded-lg w-full py-2 px-3 sm:py-3 sm:px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                    placeholder="Deine Nachricht an uns..."
+                                ></textarea>
+                            </div>
+                            <button
+                                type="submit"
+                                className="bg-indigo-600 text-white font-bold py-2 px-5 sm:py-3 sm:px-6 rounded-full hover:bg-indigo-700 transition-colors duration-300 shadow-md transform hover:scale-105 text-base sm:text-lg"
+                            >
+                                Nachricht senden
+                            </button>
+                        </form>
+                    </div>
+                </section>
+            );
+
+            // Komponente für die Datenschutzseite
+            const PrivacyPolicyPage = () => (
+                <section className="py-8 sm:py-12 px-4 bg-gray-50 rounded-lg shadow-lg m-4">
+                    <div className="container mx-auto text-left">
+                        <h2 className="text-2xl sm:text-4xl font-bold text-gray-800 mb-4 sm:mb-6 text-center break-words">Datenschutzerklärung</h2>
+                        <p className="text-base sm:text-lg text-gray-700 leading-relaxed mb-4 break-words">
+                            Wir nehmen den Schutz Ihrer persönlichen Daten sehr ernst. Diese Datenschutzerklärung informiert Sie darüber, welche personenbezogenen Daten wir erheben, wie wir sie verwenden und welche Rechte Sie in Bezug auf Ihre Daten haben.
+                        </p>
+
+                        <h3 className="text-xl sm:text-3xl font-semibold text-gray-800 mt-6 mb-3 break-words">1. Erhebung und Verarbeitung personenbezogener Daten</h3>
+                        <p className="text-base sm:text-lg text-gray-700 leading-relaxed mb-4 break-words">
+                            Wir erheben und verarbeiten personenbezogene Daten nur, soweit dies zur Bereitstellung einer funktionsfähigen Website sowie unserer Inhalte und Leistungen erforderlich ist. Dazu gehören:
+                        </p>
+                        <ul className="list-disc list-inside text-base sm:text-lg text-gray-700 leading-relaxed mb-4 pl-4 break-words">
+                            <li>Bestandsdaten (z.B. Namen, Adressen)</li>
+                            <li>Kontaktdaten (z.B. E-Mail-Adressen, Telefonnummern)</li>
+                            <li>Nutzungsdaten (z.B. besuchte Webseiten, Zugriffszeiten)</li>
+                            <li>Meta-/Kommunikationsdaten (z.B. Geräte-Informationen, IP-Adressen)</li>
+                        </ul>
+
+                        <h3 className="text-xl sm:text-3xl font-semibold text-gray-800 mt-6 mb-3 break-words">2. Zweck der Datenverarbeitung</h3>
+                        <p className="text-base sm:text-lg text-gray-700 leading-relaxed mb-4 break-words">
+                            Ihre Daten werden zu folgenden Zwecken verarbeitet:
+                        </p>
+                        <ul className="list-disc list-inside text-base sm:text-lg text-gray-700 leading-relaxed mb-4 pl-4 break-words">
+                            <li>Bereitstellung unserer Online-Angebote, Funktionen und Inhalte</li>
+                            <li>Bearbeitung von Anfragen und Kommunikation mit Nutzern</li>
+                            <li>Sicherheitsmaßnahmen</li>
+                            <li>Reichweitenmessung/Marketing</li>
+                        </ul>
+
+                        <h3 className="text-xl sm:text-3xl font-semibold text-gray-800 mt-6 mb-3 break-words">3. Ihre Rechte</h3>
+                        <p className="text-base sm:text-lg text-gray-700 leading-relaxed mb-4 break-words">
+                            Sie haben das Recht, Auskunft über Ihre von uns verarbeiteten personenbezogenen Daten zu verlangen. Des Weiteren haben Sie das Recht auf Berichtigung, Sperrung oder Löschung Ihrer Daten. Bitte kontaktieren Sie uns dazu über die im Impressum angegebenen Kontaktdaten.
+                        </p>
+
+                        <h3 className="text-xl sm:text-3xl font-semibold text-gray-800 mt-6 mb-3 break-words">4. Datensicherheit</h3>
+                        <p className="text-base sm:text-lg text-gray-700 leading-relaxed mb-4 break-words">
+                            Wir setzen technische und organisatorische Sicherheitsmaßnahmen ein, um Ihre Daten gegen zufällige oder vorsätzliche Manipulationen, Verlust, Zerstörung oder gegen den Zugriff unberechtigter Personen zu schützen.
+                        </p>
+                    </div>
+                </section>
+            );
+
+            // Komponente für die Impressumseite
+            const ImpressumPage = () => (
+                <section className="py-8 sm:py-12 px-4 bg-gray-50 rounded-lg shadow-lg m-4">
+                    <div className="container mx-auto text-left">
+                        <h2 className="text-2xl sm:text-4xl font-bold text-gray-800 mb-4 sm:mb-6 text-center break-words">Impressum</h2>
+                        <div className="text-base sm:text-lg text-gray-700 leading-relaxed space-y-3 break-words">
+                            <p><strong className="font-semibold">Angaben gemäß § 5 TMG:</strong></p>
+                            <p>JCCK-Fitness GmbH</p>
+                            <p>Musterstraße 123</p>
+                            <p>12345 Musterstadt</p>
+                            <p>Deutschland</p>
+
+                            <p><strong className="font-semibold">Vertreten durch:</strong></p>
+                            <p>Geschäftsführer: Max Mustermann</p>
+
+                            <p><strong className="font-semibold">Kontakt:</strong></p>
+                            <p>Telefon: +49 123 456789</p>
+                            <p>E-Mail: info@jcck-fitness.de</p>
+
+                            <p><strong className="font-semibold">Registereintrag:</strong></p>
+                            <p>Eintragung im Handelsregister.</p>
+                            <p>Registergericht: Amtsgericht Musterstadt</p>
+                            <p>Registernummer: HRB 12345</p>
+
+                            <p><strong className="font-semibold">Umsatzsteuer-ID:</strong></p>
+                            <p>Umsatzsteuer-Identifikationsnummer gemäß §27 a Umsatzsteuergesetz:</p>
+                            <p>DE123456789</p>
+
+                            <p><strong className="font-semibold">Verantwortlich für den Inhalt nach § 55 Abs. 2 RStV:</strong></p>
+                            <p>Max Mustermann</p>
+                            <p>Musterstraße 123</p>
+                            <p>12345 Musterstadt</p>
+                        </div>
+                    </div>
+                </section>
+            );
+
+            // Komponente für die AGB-Seite
+            const TermsAndConditionsPage = () => (
+                <section className="py-8 sm:py-12 px-4 bg-gray-50 rounded-lg shadow-lg m-4">
+                    <div className="container mx-auto text-left">
+                        <h2 className="text-2xl sm:text-4xl font-bold text-gray-800 mb-4 sm:mb-6 text-center break-words">Allgemeine Geschäftsbedingungen (AGB)</h2>
+                        <p className="text-base sm:text-lg text-gray-700 leading-relaxed mb-4 break-words">
+                            Die nachfolgenden Allgemeinen Geschäftsbedingungen (AGB) gelten für alle Bestellungen über unseren Online-Shop.
+                        </p>
+
+                        <h3 className="text-xl sm:text-3xl font-semibold text-gray-800 mt-6 mb-3 break-words">1. Geltungsbereich</h3>
+                        <p className="text-base sm:text-lg text-gray-700 leading-relaxed mb-4 break-words">
+                            Für alle Geschäftsbeziehungen zwischen der JCCK-Fitness GmbH und dem Kunden gelten ausschließlich die nachfolgenden Allgemeinen Geschäftsbedingungen in ihrer zum Zeitpunkt der Bestellung gültigen Fassung. Abweichende Bedingungen des Kunden werden nicht anerkannt, es sei denn, wir stimmen ihrer Geltung ausdrücklich schriftlich zu.
+                        </p>
+
+                        <h3 className="text-xl sm:text-3xl font-semibold text-gray-800 mt-6 mb-3 break-words">2. Vertragsschluss</h3>
+                        <p className="text-base sm:text-lg text-gray-700 leading-relaxed mb-4 break-words">
+                            Die Darstellung der Produkte im Online-Shop stellt kein rechtlich bindendes Angebot, sondern einen unverbindlichen Online-Katalog dar. Durch Anklicken des Buttons „Jetzt kaufen“ geben Sie eine verbindliche Bestellung der im Warenkorb enthaltenen Waren ab. Die Bestätigung des Zugangs Ihrer Bestellung erfolgt zusammen mit der Annahme der Bestellung unmittelbar nach dem Absenden durch automatisierte E-Mail. Mit dieser E-Mail-Bestätigung ist der Kaufvertrag zustande gekommen.
+                        </p>
+
+                        <h3 className="text-xl sm:text-3xl font-semibold text-gray-800 mt-6 mb-3 break-words">3. Preise und Zahlungsbedingungen</h3>
+                        <p className="text-base sm:text-lg text-gray-700 leading-relaxed mb-4 break-words">
+                            Alle Preise verstehen sich in Euro und beinhalten die gesetzliche Mehrwertsteuer. Die Versandkosten sind nicht im Preis inbegriffen und werden gesondert ausgewiesen. Die Zahlung kann per [Beispiel: Kreditkarte, PayPal, Vorkasse] erfolgen.
+                        </p>
+
+                        <h3 className="text-xl sm:text-3xl font-semibold text-gray-800 mt-6 mb-3 break-words">4. Lieferung und Versand</h3>
+                        <p className="text-base sm:text-lg text-gray-700 leading-relaxed mb-4 break-words">
+                            Die Lieferung erfolgt innerhalb von [Beispiel: 3-5 Werktagen] nach Zahlungseingang. Die Versandkosten sind auf der Seite "Versandinformationen" aufgeführt.
+                        </p>
+
+                        <h3 className="text-xl sm:text-3xl font-semibold text-gray-800 mt-6 mb-3 break-words">5. Widerrufsrecht</h3>
+                        <p className="text-base sm:text-lg text-gray-700 leading-relaxed mb-4 break-words">
+                            Verbrauchern steht ein gesetzliches Widerrufsrecht zu. Informationen hierzu finden Sie in unserer Widerrufsbelehrung.
+                        </p>
+
+                        <h3 className="text-xl sm:text-3xl font-semibold text-gray-800 mt-6 mb-3 break-words">6. Gewährleistung</h3>
+                        <p className="text-base sm:text-lg text-gray-700 leading-relaxed mb-4 break-words">
+                            Es gelten die gesetzlichen Gewährleistungsrechte.
+                        </p>
+
+                        <h3 className="text-xl sm:text-3xl font-semibold text-gray-800 mt-6 mb-3 break-words">7. Streitbeilegung</h3>
+                        <p className="text-base sm:text-lg text-gray-700 leading-relaxed mb-4 break-words">
+                            Die Europäische Kommission stellt eine Plattform zur Online-Streitbeilegung (OS) bereit, die Sie unter <a href="https://ec.europa.eu/consumers/odr/" target="_blank" rel="noopener noreferrer" className="text-indigo-600 hover:underline">https://ec.europa.eu/consumers/odr/</a> finden. Zur Teilnahme an einem Streitbeilegungsverfahren vor einer Verbraucherschlichtungsstelle sind wir nicht verpflichtet und nicht bereit.
+                        </p>
+                    </div>
+                </section>
+            );
+
+            // Komponente für den Warenkorb-Modal
+            const CartModal = ({ isOpen, onClose, items, onRemove, onUpdateQuantity, total }) => {
+                if (!isOpen) return null;
+
+                return (
+                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-2 sm:p-4">
+                        <div className="bg-white rounded-xl shadow-2xl w-full max-w-lg p-6 sm:p-8 relative max-h-[95vh] overflow-y-auto">
+                            <button
+                                onClick={onClose}
+                                className="absolute top-3 right-3 sm:top-4 sm:right-4 text-gray-500 hover:text-gray-800 transition-colors duration-300 text-2xl sm:text-3xl font-bold"
+                                aria-label="Warenkorb schließen"
+                            >
+                                &times;
+                            </button>
+                            <h2 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-4 sm:mb-6 text-center">Dein Warenkorb</h2>
+
+                            {items.length === 0 ? (
+                                <p className="text-center text-gray-600 text-base sm:text-lg">Dein Warenkorb ist leer.</p>
+                            ) : (
+                                <>
+                                    <div className="space-y-4 sm:space-y-6 mb-4 sm:mb-6">
+                                        {items.map((item) => (
+                                            <div key={item.id} className="flex items-center justify-between border-b pb-3 sm:pb-4 last:border-b-0">
+                                                <div className="flex items-center">
+                                                    <img
+                                                        src={item.imageUrl}
+                                                        alt={item.name}
+                                                        className="w-16 h-16 sm:w-20 sm:h-20 object-cover rounded-md mr-3 sm:mr-4 shadow-sm"
+                                                        onError={(e) => { e.target.onerror = null; e.target.src = `https://placehold.co/80x80/F0F0F0/333333?text=${item.name.replace(/\s/g, '+')}`; }}
+                                                    />
+                                                    <div>
+                                                        <h3 className="text-base sm:text-lg font-semibold text-gray-800 break-words">{item.name}</h3>
+                                                        <p className="text-indigo-600 font-medium text-sm sm:text-base">€{item.price.toFixed(2)}</p>
+                                                    </div>
+                                                </div>
+                                                <div className="flex items-center space-x-2 sm:space-x-3">
+                                                    <input
+                                                        type="number"
+                                                        min="1"
+                                                        value={item.quantity}
+                                                        onChange={(e) => onUpdateQuantity(item.id, parseInt(e.target.value))}
+                                                        className="w-14 sm:w-16 p-1.5 sm:p-2 border rounded-md text-center focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm sm:text-base"
+                                                    />
+                                                    <button
+                                                        onClick={() => onRemove(item.id)}
+                                                        className="text-red-500 hover:text-red-700 transition-colors duration-300 p-1.5 sm:p-2 rounded-full hover:bg-red-50"
+                                                        aria-label="Artikel entfernen"
+                                                    >
+                                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 sm:h-6 sm:w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                        </svg>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                    <div className="flex justify-between items-center border-t pt-4 sm:pt-6 mt-4 sm:mt-6">
+                                        <span className="text-xl sm:text-2xl font-bold text-gray-800">Gesamt:</span>
+                                        <span className="text-2xl sm:text-3xl font-extrabold text-indigo-700">€{total.toFixed(2)}</span>
+                                    </div>
+                                    <button className="w-full bg-indigo-600 text-white py-3 sm:py-4 rounded-full mt-6 sm:mt-8 text-lg sm:text-xl font-bold hover:bg-indigo-700 transition-colors duration-300 shadow-lg transform hover:scale-105">
+                                        Zur Kasse
+                                    </button>
+                                </>
+                            )}
+                        </div>
+                    </div>
+                );
+            };
+
+            // Komponente für den Footer
+            const Footer = () => (
+                <footer className="bg-gray-800 text-white py-6 sm:py-8 px-4 mt-8 rounded-t-lg">
+                    <div className="container mx-auto text-center">
+                        <p className="text-sm sm:text-lg mb-3 sm:mb-4">
+                            &copy; {new Date().getFullYear()} JCCK-Fitness. Alle Rechte vorbehalten.
+                        </p>
+                        <div className="flex justify-center space-x-4 sm:space-x-6 text-gray-400 text-sm sm:text-base">
+                            <a href="#" onClick={(e) => { e.preventDefault(); setCurrentPage('privacy'); }} className="hover:text-white transition-colors duration-300">
+                                Datenschutz
+                            </a>
+                            <a href="#" onClick={(e) => { e.preventDefault(); setCurrentPage('impressum'); }} className="hover:text-white transition-colors duration-300">
+                                Impressum
+                            </a>
+                            <a href="#" onClick={(e) => { e.preventDefault(); setCurrentPage('agb'); }} className="hover:text-white transition-colors duration-300">
+                                AGB
+                            </a>
+                        </div>
+                    </div>
+                </footer>
+            );
+
+            // Rendern der entsprechenden Seite basierend auf dem 'currentPage'-Zustand
+            const renderPage = () => {
+                switch (currentPage) {
+                    case 'home':
+                        return (
+                            <>
+                                <HeroSection />
+                                <ProductList />
+                            </>
+                        );
+                    case 'products':
+                        return <ProductList />;
+                    case 'about':
+                        return <AboutPage />;
+                    case 'contact':
+                        return <ContactPage />;
+                    case 'privacy':
+                        return <PrivacyPolicyPage />;
+                    case 'impressum':
+                        return <ImpressumPage />;
+                    case 'agb':
+                        return <TermsAndConditionsPage />;
+                    default:
+                        return (
+                            <>
+                                <HeroSection />
+                                <ProductList />
+                            </>
+                        );
+                }
+            };
+
+            return (
+                <div className="min-h-screen bg-gray-100 font-sans antialiased text-gray-900">
+                    <Header />
+                    <main className="container mx-auto py-4 sm:py-8">
+                        {renderPage()}
+                    </main>
+                    <Footer />
+
+                    <CartModal
+                        isOpen={isCartOpen}
+                        onClose={() => setIsCartOpen(false)}
+                        items={cartItems}
+                        onRemove={removeFromCart}
+                        onUpdateQuantity={updateQuantity}
+                        total={cartTotal}
+                    />
+                </div>
+            );
+        }
+
+        // Rendern der React-App in das DOM
+        const container = document.getElementById('root');
+        const root = ReactDOM.createRoot(container);
+        root.render(<App />);
+    </script>
+</body>
+</html>
